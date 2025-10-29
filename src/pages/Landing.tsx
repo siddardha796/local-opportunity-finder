@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BarChart3, Map, TrendingUp, FileText, ArrowRight, CheckCircle2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import AnimatedAIPill from "@/components/AnimatedAIPill";
 import heroImage from "@/assets/hero-hyderabad.jpg";
 
 const Landing = () => {
@@ -44,11 +45,9 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-28">
         <div className="container relative z-10">
+          <AnimatedAIPill variant="animated" />
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             <div>
-              <div className="inline-block rounded-full bg-secondary/10 px-4 py-1.5 text-sm font-medium text-secondary mb-6">
-                Powered by AI Analytics
-              </div>
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 Discover Hidden Business Opportunities
               </h1>
