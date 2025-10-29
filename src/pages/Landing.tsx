@@ -57,7 +57,7 @@ const Landing = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/neighborhoods">
-                  <Button size="lg" className="bg-primary hover:bg-primary-hover shadow-primary w-full sm:w-auto">
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-hover shadow-primary w-full sm:w-auto">
                     Explore Neighborhoods
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
