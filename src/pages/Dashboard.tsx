@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LocationPicker from "@/components/LocationPicker";
+import AnimatedAIPill from "@/components/AnimatedAIPill";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -116,178 +117,194 @@ const Dashboard = () => {
       <Navbar />
       
       <div className="container py-12">
-        <div className="mb-12">
+        <AnimatedAIPill />
+
+        <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold mb-4">Opportunity Dashboard</h1>
-          <p className="text-lg text-muted-foreground max-w-3xl">
-            AI-powered analysis of business gaps across Hyderabad neighborhoods with actionable insights and market sizing
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Select a location on the map to discover AI-powered business opportunities and market insights
           </p>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {metrics.map((metric, index) => (
-            <Card key={index} className="p-6 border-border/50">
-              <div className="flex items-center gap-4">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-${metric.color.split('-')[1]}/10`}>
-                  <metric.icon className={`h-6 w-6 ${metric.color}`} />
+        {/* Location Picker - Always visible */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <LocationPicker onLocationSelect={setSelectedLocation} />
+          {selectedLocation && (
+            <Card className="mt-4 p-4 border-border/50 bg-primary/5">
+              <p className="text-sm font-medium mb-1">Selected Location</p>
+              <p className="text-lg font-semibold">{selectedLocation.name}</p>
+              <p className="text-xs text-muted-foreground mt-1">{selectedLocation.address}</p>
+            </Card>
+          )}
+        </div>
+
+        {/* Show dashboard content only after location is selected */}
+        {selectedLocation && (
+          <>
+            {/* Key Metrics */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+              {metrics.map((metric, index) => (
+                <Card key={index} className="p-6 border-border/50">
+                  <div className="flex items-center gap-4">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-${metric.color.split('-')[1]}/10`}>
+                      <metric.icon className={`h-6 w-6 ${metric.color}`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground">{metric.label}</p>
+                      <p className="text-2xl font-bold">{metric.value}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{metric.change}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2 mb-8">
+              {/* Opportunity Chart */}
+              <Card className="p-6 border-border/50">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Top Business Opportunities - {selectedLocation.name}
+                </h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={opportunityData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis 
+                      dataKey="category" 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={100}
+                      className="text-xs"
+                    />
+                    <YAxis className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '0.5rem'
+                      }}
+                    />
+                    <Bar dataKey="score" radius={[8, 8, 0, 0]}>
+                      {opportunityData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+
+              {/* Quick Insights */}
+              <Card className="p-6 border-border/50">
+                <h3 className="text-lg font-semibold mb-4">Key Insights</h3>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <div className="flex items-start gap-3">
+                      <Badge className="bg-primary text-primary-foreground">High Demand</Badge>
+                      <div className="flex-1">
+                        <p className="font-medium mb-1">Health & Fitness Gap</p>
+                        <p className="text-sm text-muted-foreground">
+                          Limited fitness facilities serving the population in {selectedLocation.name}. High potential for gyms and wellness centers.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/20">
+                    <div className="flex items-start gap-3">
+                      <Badge className="bg-secondary text-secondary-foreground">Growing Need</Badge>
+                      <div className="flex-1">
+                        <p className="font-medium mb-1">Childcare Services</p>
+                        <p className="text-sm text-muted-foreground">
+                          Young families in {selectedLocation.name} have limited childcare options. Strong market opportunity.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
+                    <div className="flex items-start gap-3">
+                      <Badge className="bg-accent text-accent-foreground">Quick Win</Badge>
+                      <div className="flex-1">
+                        <p className="font-medium mb-1">Quick Service Restaurants</p>
+                        <p className="text-sm text-muted-foreground">
+                          High foot traffic near {selectedLocation.name}. Quick-service dining has low entry barriers.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">{metric.label}</p>
-                  <p className="text-2xl font-bold">{metric.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{metric.change}</p>
+              </Card>
+            </div>
+
+            {/* AI Analysis Section */}
+            <Card className="p-6 border-border/50 bg-gradient-to-br from-primary/5 to-secondary/5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary">
+                  <Sparkles className="h-5 w-5 text-background" />
                 </div>
+                <div>
+                  <h3 className="text-lg font-semibold">AI-Powered Analysis</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Ask specific questions about business opportunities in {selectedLocation.name}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Textarea
+                  placeholder="E.g., 'What business opportunities exist here?' or 'Analyze demand for cafes and restaurants'"
+                  value={userQuery}
+                  onChange={(e) => setUserQuery(e.target.value)}
+                  className="min-h-[100px] resize-none"
+                />
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleAnalyze} 
+                    disabled={isAnalyzing}
+                    className="bg-primary hover:bg-primary-hover text-primary-foreground"
+                  >
+                    {isAnalyzing ? (
+                      <>Analyzing...</>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Analyze Location
+                      </>
+                    )}
+                  </Button>
+                  <Button onClick={handleExport} variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Report
+                  </Button>
+                </div>
+
+                {aiInsight && (
+                  <div className="p-4 rounded-lg bg-card border border-border">
+                    <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      AI Analysis
+                    </p>
+                    <p className="text-sm text-foreground whitespace-pre-wrap">{aiInsight}</p>
+                  </div>
+                )}
               </div>
             </Card>
-          ))}
-        </div>
+          </>
+        )}
 
-        <div className="grid gap-6 lg:grid-cols-3 mb-8">
-          {/* Location Picker */}
-          <div className="lg:col-span-1">
-            <LocationPicker onLocationSelect={setSelectedLocation} />
-            {selectedLocation && (
-              <Card className="mt-4 p-4 border-border/50 bg-primary/5">
-                <p className="text-sm font-medium mb-1">Selected Location</p>
-                <p className="text-sm text-muted-foreground">{selectedLocation.name}</p>
-                <p className="text-xs text-muted-foreground mt-1">{selectedLocation.address}</p>
-              </Card>
-            )}
+        {/* Empty state when no location selected */}
+        {!selectedLocation && (
+          <div className="text-center py-20">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-4">
+              <TrendingUp className="h-8 w-8 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">No Location Selected</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Search for a location in Hyderabad using the map above to see detailed analytics and business opportunities
+            </p>
           </div>
-
-          {/* Opportunity Chart */}
-          <Card className="p-6 border-border/50 lg:col-span-2">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Top Business Opportunities
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={opportunityData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis 
-                  dataKey="category" 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={100}
-                  className="text-xs"
-                />
-                <YAxis className="text-xs" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '0.5rem'
-                  }}
-                />
-                <Bar dataKey="score" radius={[8, 8, 0, 0]}>
-                  {opportunityData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
-          {/* Quick Insights */}
-          <Card className="p-6 border-border/50">
-            <h3 className="text-lg font-semibold mb-4">Key Insights</h3>
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-primary text-primary-foreground">High Demand</Badge>
-                  <div className="flex-1">
-                    <p className="font-medium mb-1">Health & Fitness Gap</p>
-                    <p className="text-sm text-muted-foreground">
-                      Only 2 gyms serving 95K population in Gachibowli. Estimated demand for 5-7 facilities.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/20">
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-secondary text-secondary-foreground">Growing Need</Badge>
-                  <div className="flex-1">
-                    <p className="font-medium mb-1">Childcare Services</p>
-                    <p className="text-sm text-muted-foreground">
-                      40% population under 35 with young families. Childcare capacity at 60% of demand.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-                <div className="flex items-start gap-3">
-                  <Badge className="bg-accent text-accent-foreground">Quick Win</Badge>
-                  <div className="flex-1">
-                    <p className="font-medium mb-1">Quick Service Restaurants</p>
-                    <p className="text-sm text-muted-foreground">
-                      High foot traffic near IT parks, limited lunch options. Low entry barriers.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* AI Analysis Section */}
-          <Card className="p-6 border-border/50 bg-gradient-to-br from-primary/5 to-secondary/5">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">AI-Powered Analysis</h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedLocation 
-                    ? `Analyzing opportunities for ${selectedLocation.name}`
-                    : "Select a location and ask about opportunities"}
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Textarea
-                placeholder="E.g., 'What business opportunities exist here?' or 'Analyze demand for cafes and restaurants'"
-                value={userQuery}
-                onChange={(e) => setUserQuery(e.target.value)}
-                className="min-h-[100px] resize-none"
-              />
-
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleAnalyze} 
-                  disabled={isAnalyzing}
-                  className="bg-primary hover:bg-primary-hover"
-                >
-                  {isAnalyzing ? (
-                    <>Analyzing...</>
-                  ) : (
-                    <>
-                      <Send className="mr-2 h-4 w-4" />
-                      Analyze Location
-                    </>
-                  )}
-                </Button>
-                <Button onClick={handleExport} variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
-                  Export Report
-                </Button>
-              </div>
-
-              {aiInsight && (
-                <div className="p-4 rounded-lg bg-card border border-border">
-                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-secondary" />
-                    AI Analysis
-                  </p>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{aiInsight}</p>
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
+        )}
       </div>
     </div>
   );
