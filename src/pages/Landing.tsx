@@ -48,7 +48,7 @@ const Landing = () => {
           <AnimatedAIPill variant="animated" />
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent pb-2">
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent pb-4 leading-tight">
                 Discover Hidden Business Opportunities
               </h1>
               <p className="text-lg text-muted-foreground mb-8 max-w-xl">
