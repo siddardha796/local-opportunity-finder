@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { query } = await req.json();
+    const { query, location } = await req.json();
     
     if (!query) {
       return new Response(
@@ -31,13 +31,18 @@ Deno.serve(async (req) => {
 
     console.log('Analyzing opportunity query:', query);
 
+    const locationContext = location 
+      ? `\n\nCurrent Location Analysis: ${location.name} at ${location.address} (Coordinates: ${location.lat}, ${location.lng})`
+      : '';
+
     const systemPrompt = `You are an expert business analyst specializing in neighborhood opportunity analysis for Hyderabad, India. 
 You help entrepreneurs and businesses identify market gaps, validate demand, and assess business opportunities.
+${locationContext}
 
 Provide concise, data-driven insights focusing on:
-- Market demand signals and sizing
-- Competition analysis
-- Target demographics
+- Market demand signals and sizing for the specific location
+- Competition analysis in the area
+- Target demographics of the neighborhood
 - Entry barriers and considerations
 - Actionable next steps
 

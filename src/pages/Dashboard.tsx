@@ -8,12 +8,19 @@ import { TrendingUp, Building2, Users, DollarSign, Send, Download, Sparkles } fr
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import LocationPicker from "@/components/LocationPicker";
 
 const Dashboard = () => {
   const { toast } = useToast();
   const [userQuery, setUserQuery] = useState("");
   const [aiInsight, setAiInsight] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    name: string;
+    address: string;
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   const opportunityData = [
     { category: "Health & Fitness", score: 92, color: "hsl(160, 65%, 45%)" },
@@ -67,8 +74,15 @@ const Dashboard = () => {
 
     setIsAnalyzing(true);
     try {
+      const queryWithLocation = selectedLocation
+        ? `Location: ${selectedLocation.name}, ${selectedLocation.address}\n\n${userQuery}`
+        : userQuery;
+
       const { data, error } = await supabase.functions.invoke('analyze-opportunity', {
-        body: { query: userQuery }
+        body: { 
+          query: queryWithLocation,
+          location: selectedLocation 
+        }
       });
 
       if (error) throw error;
@@ -127,9 +141,21 @@ const Dashboard = () => {
           ))}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
+        <div className="grid gap-6 lg:grid-cols-3 mb-8">
+          {/* Location Picker */}
+          <div className="lg:col-span-1">
+            <LocationPicker onLocationSelect={setSelectedLocation} />
+            {selectedLocation && (
+              <Card className="mt-4 p-4 border-border/50 bg-primary/5">
+                <p className="text-sm font-medium mb-1">Selected Location</p>
+                <p className="text-sm text-muted-foreground">{selectedLocation.name}</p>
+                <p className="text-xs text-muted-foreground mt-1">{selectedLocation.address}</p>
+              </Card>
+            )}
+          </div>
+
           {/* Opportunity Chart */}
-          <Card className="p-6 border-border/50">
+          <Card className="p-6 border-border/50 lg:col-span-2">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
               Top Business Opportunities
@@ -160,7 +186,9 @@ const Dashboard = () => {
               </BarChart>
             </ResponsiveContainer>
           </Card>
+        </div>
 
+        <div className="grid gap-6 lg:grid-cols-2 mb-8">
           {/* Quick Insights */}
           <Card className="p-6 border-border/50">
             <h3 className="text-lg font-semibold mb-4">Key Insights</h3>
@@ -202,62 +230,64 @@ const Dashboard = () => {
               </div>
             </div>
           </Card>
-        </div>
 
-        {/* AI Analysis Section */}
-        <Card className="p-6 border-border/50 bg-gradient-to-br from-primary/5 to-secondary/5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">AI-Powered Analysis</h3>
-              <p className="text-sm text-muted-foreground">
-                Ask about specific opportunities, neighborhoods, or business categories
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <Textarea
-              placeholder="E.g., 'What are the best opportunities for health & wellness businesses in tech corridors?' or 'Analyze demand for childcare in Kondapur'"
-              value={userQuery}
-              onChange={(e) => setUserQuery(e.target.value)}
-              className="min-h-[100px] resize-none"
-            />
-
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleAnalyze} 
-                disabled={isAnalyzing}
-                className="bg-primary hover:bg-primary-hover"
-              >
-                {isAnalyzing ? (
-                  <>Analyzing...</>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Analyze
-                  </>
-                )}
-              </Button>
-              <Button onClick={handleExport} variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Export Report
-              </Button>
-            </div>
-
-            {aiInsight && (
-              <div className="p-4 rounded-lg bg-card border border-border">
-                <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-secondary" />
-                  AI Analysis
-                </p>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{aiInsight}</p>
+          {/* AI Analysis Section */}
+          <Card className="p-6 border-border/50 bg-gradient-to-br from-primary/5 to-secondary/5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary">
+                <Sparkles className="h-5 w-5 text-white" />
               </div>
-            )}
-          </div>
-        </Card>
+              <div>
+                <h3 className="text-lg font-semibold">AI-Powered Analysis</h3>
+                <p className="text-sm text-muted-foreground">
+                  {selectedLocation 
+                    ? `Analyzing opportunities for ${selectedLocation.name}`
+                    : "Select a location and ask about opportunities"}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <Textarea
+                placeholder="E.g., 'What business opportunities exist here?' or 'Analyze demand for cafes and restaurants'"
+                value={userQuery}
+                onChange={(e) => setUserQuery(e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleAnalyze} 
+                  disabled={isAnalyzing}
+                  className="bg-primary hover:bg-primary-hover"
+                >
+                  {isAnalyzing ? (
+                    <>Analyzing...</>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Analyze Location
+                    </>
+                  )}
+                </Button>
+                <Button onClick={handleExport} variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export Report
+                </Button>
+              </div>
+
+              {aiInsight && (
+                <div className="p-4 rounded-lg bg-card border border-border">
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-secondary" />
+                    AI Analysis
+                  </p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{aiInsight}</p>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
